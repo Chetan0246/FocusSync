@@ -58,7 +58,7 @@ function Signup() {
 
     if (result.success) {
       addToast('Account created successfully!', 'success');
-      navigate('/dashboard');
+      navigate('/home');
     } else {
       addToast(result.error || 'Signup failed', 'error');
     }

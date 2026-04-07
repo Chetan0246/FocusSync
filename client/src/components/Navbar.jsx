@@ -17,13 +17,12 @@ function Navbar() {
   }, []);
 
   const publicLinks = [
-    { path: '/', label: 'Home', icon: '⌂' },
     { path: '/login', label: 'Login', icon: '🔑' },
     { path: '/signup', label: 'Sign Up', icon: '✨' },
   ];
 
   const privateLinks = [
-    { path: '/', label: 'Home', icon: '⌂' },
+    { path: '/home', label: 'Home', icon: '⌂' },
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
   ];
 
