@@ -1,10 +1,7 @@
-require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 const Session = require('./models/Session');
 const analyticsRoutes = require('./routes/analytics');
@@ -14,16 +11,8 @@ connectDB();
 
 const app = express();
 
-const allowedOrigins = process.env.CORS_ORIGIN 
-  ? process.env.CORS_ORIGIN.split(',')
-  : ['http://localhost:3000', 'http://localhost:5000'];
-
-app.use(helmet());
-app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(express.json());
-
-const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
-app.use('/api', limiter);
 
 app.use('/api/auth', authRoutes);
 app.use('/api', analyticsRoutes);
@@ -33,13 +22,9 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Something went wrong!' });
 });
 
-// Create HTTP server and attach Socket.io to it
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: 'http://localhost:3000', // Allow frontend to connect
-    methods: ['GET', 'POST'],
-  },
+  cors: { origin: 'http://localhost:3000', methods: ['GET', 'POST'] },
 });
 
 // In-memory storage for active sessions
