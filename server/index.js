@@ -1,26 +1,37 @@
-// Import required modules
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 const Session = require('./models/Session');
 const analyticsRoutes = require('./routes/analytics');
+const authRoutes = require('./routes/auth');
 
-// Connect to MongoDB
 connectDB();
 
-// Initialize Express app
 const app = express();
 
-// Enable CORS so frontend can communicate with backend
-app.use(cors());
+const allowedOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',')
+  : ['http://localhost:3000', 'http://localhost:5000'];
 
-// Parse JSON request bodies
+app.use(helmet());
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 
-// Register analytics API routes
+const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
+app.use('/api', limiter);
+
+app.use('/api/auth', authRoutes);
 app.use('/api', analyticsRoutes);
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something went wrong!' });
+});
 
 // Create HTTP server and attach Socket.io to it
 const server = http.createServer(app);
