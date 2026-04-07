@@ -39,4 +39,7 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('User', userSchema);
