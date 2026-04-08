@@ -195,7 +195,7 @@ function Dashboard() {
         </div>
         <div style={{ marginTop: '16px', padding: '16px', background: '#1e293b', borderRadius: '12px' }}>
           <p style={{ color: '#f8fafc', fontSize: '14px', lineHeight: '1.6' }}>
-            <strong>How it works:</strong> HIGH (80+), MEDIUM (50-79), LOW (<50) based on focus score
+            <strong>How it works:</strong> HIGH (80+), MEDIUM (50-79), LOW (&lt;50) based on focus score
           </p>
         </div>
       </div>
@@ -292,8 +292,7 @@ function Dashboard() {
               />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', fontSize: '13px', color: '#64748b' }}>
-              <span>Time: {latestSession.endTime && latestSession.startTime ? 
-                Math.round((new Date(latestSession.endTime) - new Date(latestSession.startTime)) / 60000 : 0}m</span>
+              <span>Time: {latestSession.endTime && latestSession.startTime ? Math.round((new Date(latestSession.endTime) - new Date(latestSession.startTime)) / 60000) : 0}m</span>
               <span>Distractions: {latestSession.distractions || 0}</span>
             </div>
           </div>
