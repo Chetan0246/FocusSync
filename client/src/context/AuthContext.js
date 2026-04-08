@@ -1,12 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -63,7 +61,7 @@ export function AuthProvider({ children }) {
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    navigate('/login');
+    window.location.href = '/login';
   };
 
   const getAuthHeader = () => {
