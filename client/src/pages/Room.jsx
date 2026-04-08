@@ -38,9 +38,15 @@ function Room() {
     const socket = socketRef.current;
 
     socket.on('connect', () => {
+      console.log('Socket connected:', socket.id);
       socket.emit('join_room', roomId);
       addToast('Joined room successfully!', 'success');
       addEvent('user_joined', 'User joined the room');
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+      addToast('Connection error!', 'error');
     });
 
     socket.on('user_count', (count) => {
@@ -147,8 +153,11 @@ function Room() {
 
   // Session controls
   const handleStartSession = () => {
-    if (socketRef.current) {
+    if (socketRef.current && socketRef.current.connected) {
+      console.log('Starting session:', roomId, duration);
       socketRef.current.emit('start_session', { roomId, duration });
+    } else {
+      addToast('Connecting... Please wait', 'warning');
     }
   };
 

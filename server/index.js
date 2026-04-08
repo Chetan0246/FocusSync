@@ -57,14 +57,18 @@ const io = new Server(server, {
 
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
+  console.log('Socket auth - token:', token ? 'present' : 'missing');
   if (!token) {
+    console.log('Socket auth failed: No token');
     return next(new Error('Authentication error: No token provided'));
   }
   try {
     const decoded = jwt.verify(token, config.JWT_SECRET);
     socket.userId = decoded.userId;
+    console.log('Socket auth success, userId:', socket.userId);
     next();
   } catch (err) {
+    console.log('Socket auth failed: Invalid token', err.message);
     next(new Error('Authentication error: Invalid token'));
   }
 });
@@ -93,21 +97,23 @@ io.on('connection', (socket) => {
 
   socket.on('start_session', async ({ roomId, duration }) => {
     try {
+      console.log('start_session received:', { roomId, duration, userId: socket.userId });
+      
       const durationMs = duration * 60 * 1000;
       const startTime = new Date();
       const endTime = new Date(startTime.getTime() + durationMs);
 
       activeSessions[roomId] = {
-        ...activeSessions[roomId],
+        userCount: activeSessions[roomId]?.userCount || 1,
+        distractionCount: 0,
         endTime: endTime.getTime(),
         session: { roomId, startTime, events: [{ type: 'start', time: startTime }] },
-        distractionCount: 0,
       };
 
       const session = new Session({
         roomId,
         startTime,
-        userId: socket.userId,
+        userId: socket.userId || 'anonymous',
         events: [{ type: 'start', time: startTime }],
       });
       await session.save();
@@ -117,7 +123,7 @@ io.on('connection', (socket) => {
       console.log(`Session started in room ${roomId} for ${duration} minutes`);
     } catch (error) {
       console.error('Session start error:', error);
-      socket.emit('error', { message: 'Failed to start session' });
+      socket.emit('error', { message: 'Failed to start session: ' + error.message });
     }
   });
 
