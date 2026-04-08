@@ -103,7 +103,7 @@ function Room() {
     return () => {
       socket.disconnect();
     };
-  }, [roomId, addToast, getAuthHeader, distractionCount]);
+  }, [roomId]);
 
   // Fetch session history
   useEffect(() => {
@@ -153,8 +153,10 @@ function Room() {
 
   // Session controls
   const handleStartSession = () => {
+    console.log('Socket connected:', socketRef.current?.connected);
+    console.log('Socket ID:', socketRef.current?.id);
     if (socketRef.current && socketRef.current.connected) {
-      console.log('Starting session:', roomId, duration);
+      console.log('Emitting start_session:', { roomId, duration });
       socketRef.current.emit('start_session', { roomId, duration });
     } else {
       addToast('Connecting... Please wait', 'warning');

@@ -15,7 +15,7 @@ const Session = require('../models/Session');
 const auth = require('../middleware/auth');
 
 // ============================================
-// GET /api/analytics/all - Get all sessions (paginated)
+// GET /api/analytics/all - Get user's sessions (paginated)
 // ============================================
 // Query params: ?page=1&limit=20
 router.get('/analytics/all', auth, async (req, res) => {
@@ -26,12 +26,13 @@ router.get('/analytics/all', auth, async (req, res) => {
     const skip = (page - 1) * limit;
     
     // MongoDB queries: find(), sort(), skip(), limit()
-    const sessions = await Session.find()
+    // Filter by userId to show only user's own sessions
+    const sessions = await Session.find({ userId: req.userId })
       .sort({ createdAt: -1 })  // -1 = descending (newest first)
       .skip(skip)                // Skip records for pagination
       .limit(limit);             // Limit results per page
     
-    const total = await Session.countDocuments();
+    const total = await Session.countDocuments({ userId: req.userId });
     res.json({ sessions, page, limit, total, pages: Math.ceil(total / limit) });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -122,8 +123,8 @@ router.get('/heatmap', async (req, res) => {
 // Calculates patterns in user's study behavior
 router.get('/insights', auth, async (req, res) => {
   try {
-    // Get recent sessions for analysis
-    const sessions = await Session.find().sort({ createdAt: -1 }).limit(50);
+    // Get recent sessions for analysis - filtered by userId
+    const sessions = await Session.find({ userId: req.userId }).sort({ createdAt: -1 }).limit(50);
     
     // Calculate behavioral metrics
     let totalDistractions = 0;

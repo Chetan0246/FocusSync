@@ -198,6 +198,7 @@ io.on('connection', (socket) => {
   // START SESSION - Begin a new study timer
   // ============================================
   socket.on('start_session', async ({ roomId, duration }) => {
+    console.log('start_session received:', { roomId, duration, socketId: socket.id, userId: socket.userId });
     try {
       // Calculate session timing
       const durationMs = duration * 60 * 1000;  // Convert minutes to milliseconds
