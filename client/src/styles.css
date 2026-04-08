@@ -1,57 +1,37 @@
-/*
- * FocusSync - Main Styles
- * ======================
- * Educational project demonstrating web technologies
+/* 
+ * FocusSync - Syllabus Compliant Styling
+ * ======================================
+ * This file contains CSS styles aligned with your syllabus:
  * 
- * SYLLABUS COVERAGE:
- * ==================
+ * CO1: HTML5/CSS3
+ * - CSS3 Selectors
+ * - Backgrounds and borders
+ * - Text effects
+ * - Cascading and inheritance
+ * - Box Model
+ * - Flexbox and Grid
+ * - Bootstrap components
+ * - Responsive design
  * 
- * CO1: Web Essentials (HTML5/CSS3)
- * - Semantic HTML5 tags
- * - CSS3 selectors, gradients, animations
- * - Flexbox and Grid layouts
- * - Box Model and responsive design
+ * CO2: JavaScript/jQuery
+ * - DOM manipulation styles
+ * - Animation classes
  * 
- * CO2: Client-side Scripting (JavaScript)
- * - Variables, functions, events
- * - DOM manipulation
- * - Timing functions
- * - Form validation
- * - jQuery library for DOM manipulation and effects
- * 
- * CO3: Client/Server Communication
- * - HTTP requests and responses
- * - REST APIs
- * - JSON data formats
- * - AJAX calls (using jQuery $.ajax)
- * 
- * CO4: Server-side Development (Node.js/Express)
- * - Express server setup
- * - API routes
- * - Middleware
- * - MongoDB integration
- * 
- * CO5: Component-based Frontend (React)
- * - Functional components
- * - useState and useEffect hooks
- * - Props and state management
- * - React Router
+ * CO3: React
+ * - Component styling
+ * - State-based styling
  */
 
-/* ============================================
-   CSS VARIABLES - CSS3 Custom Properties
-   ============================================ */
+/* ===========================================
+   CSS3 VARIABLES (Topic 4)
+   =========================================== */
 :root {
-  /* Primary Colors */
+  /* Colors - CSS3 Custom Properties */
   --primary: #22c55e;
   --primary-dark: #16a34a;
   --primary-light: #4ade80;
-  
-  /* Secondary Colors */
   --secondary: #3b82f6;
   --accent: #8b5cf6;
-  
-  /* Status Colors */
   --success: #22c55e;
   --warning: #f59e0b;
   --danger: #ef4444;
@@ -84,11 +64,16 @@
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+  
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s ease;
 }
 
-/* ============================================
-   CSS RESET - Base Styles
-   ============================================ */
+/* ===========================================
+   CSS RESET (Topic 1 - HTML Basics)
+   =========================================== */
 * {
   margin: 0;
   padding: 0;
@@ -96,7 +81,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
   background: var(--bg-dark);
   color: var(--text-primary);
   line-height: 1.6;
@@ -107,9 +92,9 @@ body {
   min-height: 100vh;
 }
 
-/* ============================================
-   TYPOGRAPHY - CSS Text Styling
-   ============================================ */
+/* ===========================================
+   TYPOGRAPHY (Topic 5 - CSS Text/Font)
+   =========================================== */
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   line-height: 1.3;
@@ -129,6 +114,7 @@ p {
 a {
   color: var(--primary);
   text-decoration: none;
+  transition: color var(--transition-fast);
 }
 
 a:hover {
@@ -140,11 +126,10 @@ a:hover {
 .text-yellow { color: var(--warning); }
 .text-red { color: var(--danger); }
 .text-muted { color: var(--text-muted); }
-.font-mono { font-family: monospace; }
 
-/* ============================================
-   LAYOUT - CSS Box Model
-   ============================================ */
+/* ===========================================
+   LAYOUT CONTAINERS (Topic 6 - Box Model)
+   =========================================== */
 .App {
   min-height: 100vh;
   position: relative;
@@ -158,9 +143,9 @@ a:hover {
   z-index: 1;
 }
 
-/* ============================================
-   BACKGROUND - CSS3 Gradients
-   ============================================ */
+/* ===========================================
+   BACKGROUND EFFECTS (Topic 4 - CSS Gradients)
+   =========================================== */
 .background-effects {
   position: fixed;
   top: 0;
@@ -216,9 +201,9 @@ a:hover {
   background-size: 60px 60px;
 }
 
-/* ============================================
-   CARDS - CSS Box Model & Flexbox
-   ============================================ */
+/* ===========================================
+   CARDS (Topic 6 - Box Model)
+   =========================================== */
 .card {
   background: var(--bg-card);
   border-radius: var(--radius-lg);
@@ -226,6 +211,7 @@ a:hover {
   margin-bottom: var(--space-lg);
   border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: var(--shadow-md);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
 }
 
 .card:hover {
@@ -237,9 +223,9 @@ a:hover {
   box-shadow: var(--shadow-lg), 0 0 40px rgba(34, 197, 94, 0.1);
 }
 
-/* ============================================
-   BUTTONS - CSS Styling
-   ============================================ */
+/* ===========================================
+   BUTTONS (Topic 5 - CSS Styling)
+   =========================================== */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -251,7 +237,7 @@ a:hover {
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
 }
 
 .btn-primary {
@@ -262,6 +248,10 @@ a:hover {
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
 }
 
 .btn-secondary {
@@ -285,9 +275,9 @@ a:hover {
   cursor: not-allowed;
 }
 
-/* ============================================
-   FORMS - HTML Forms & CSS
-   ============================================ */
+/* ===========================================
+   FORM ELEMENTS (Topic 3 - HTML Forms)
+   =========================================== */
 .form-group {
   margin-bottom: var(--space-lg);
 }
@@ -307,7 +297,7 @@ a:hover {
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-size: 1rem;
-  transition: all 0.3s ease;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .input:focus {
@@ -324,9 +314,9 @@ select.input {
   cursor: pointer;
 }
 
-/* ============================================
-   NAVIGATION - CSS Navbar
-   ============================================ */
+/* ===========================================
+   NAVIGATION (Topic 5 - CSS Navbar)
+   =========================================== */
 nav {
   position: sticky;
   top: 0;
@@ -356,7 +346,7 @@ nav {
   align-items: center;
   gap: var(--space-sm);
   color: var(--text-muted);
-  transition: all 0.3s ease;
+  transition: all var(--transition-fast);
 }
 
 .nav-link:hover {
@@ -369,9 +359,9 @@ nav {
   color: var(--primary);
 }
 
-/* ============================================
-   GRID - CSS Grid Layout
-   ============================================ */
+/* ===========================================
+   GRID SYSTEM (Topic 6 - CSS Grid)
+   =========================================== */
 .grid {
   display: grid;
   gap: var(--space-lg);
@@ -387,9 +377,9 @@ nav {
   }
 }
 
-/* ============================================
-   TIMER - JavaScript Timing Functions
-   ============================================ */
+/* ===========================================
+   TIMER STYLES (Topic 2 - JavaScript Timing)
+   =========================================== */
 .timer-display {
   font-size: 5rem;
   font-weight: 900;
@@ -426,9 +416,9 @@ nav {
   height: 12px;
 }
 
-/* ============================================
-   STATISTICS - CSS Cards
-   ============================================ */
+/* ===========================================
+   STATISTICS (Topic 6 - CSS Cards)
+   =========================================== */
 .stat-card {
   background: var(--bg-card);
   border-radius: var(--radius-lg);
@@ -468,9 +458,9 @@ nav {
   }
 }
 
-/* ============================================
-   SECTIONS - Semantic HTML
-   ============================================ */
+/* ===========================================
+   SECTIONS (Topic 1 - Semantic HTML)
+   =========================================== */
 .section-title {
   font-size: 1.25rem;
   font-weight: 700;
@@ -490,9 +480,9 @@ nav {
   background-clip: text;
 }
 
-/* ============================================
-   SPINNER - CSS Animation
-   ============================================ */
+/* ===========================================
+   SPINNER / LOADER (Topic 2 - CSS Animation)
+   =========================================== */
 .spinner {
   width: 40px;
   height: 40px;
@@ -517,9 +507,9 @@ nav {
   to { transform: rotate(360deg); }
 }
 
-/* ============================================
-   TABLES - HTML Tables
-   ============================================ */
+/* ===========================================
+   TABLES (Topic 1 - HTML Tables)
+   =========================================== */
 .table-container {
   overflow-x: auto;
 }
@@ -540,15 +530,16 @@ th {
   font-weight: 600;
   font-size: 0.85rem;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 tr:hover {
   background: rgba(255, 255, 255, 0.02);
 }
 
-/* ============================================
-   LEADERBOARD - HTML Lists
-   ============================================ */
+/* ===========================================
+   LEADERBOARD (Topic 1 - HTML Lists)
+   =========================================== */
 .leaderboard-item {
   display: flex;
   align-items: center;
@@ -557,7 +548,7 @@ tr:hover {
   background: var(--bg-input);
   border-radius: var(--radius-md);
   margin-bottom: var(--space-sm);
-  transition: all 0.3s ease;
+  transition: all var(--transition-fast);
 }
 
 .leaderboard-item:hover {
@@ -583,9 +574,9 @@ tr:hover {
   font-size: 0.9rem;
 }
 
-/* ============================================
-   TIMELINE - HTML Lists
-   ============================================ */
+/* ===========================================
+   TIMELINE (Topic 1 - HTML Lists)
+   =========================================== */
 .timeline {
   padding-left: var(--space-lg);
   border-left: 2px solid rgba(255, 255, 255, 0.1);
@@ -599,24 +590,23 @@ tr:hover {
   position: relative;
 }
 
-.timeline-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--space-lg) - 5px);
+  width: 10px;
+  height: 10px;
   background: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
+  border-radius: 50%;
 }
 
-.timeline-icon.start { background: var(--success); }
-.timeline-icon.distraction { background: var(--warning); }
-.timeline-icon.end { background: var(--danger); }
+.timeline-item.start::before { background: var(--success); }
+.timeline-item.distraction::before { background: var(--warning); }
+.timeline-item.end::before { background: var(--danger); }
 
-/* ============================================
-   HEATMAP - CSS Grid
-   ============================================ */
+/* ===========================================
+   HEATMAP (Topic 6 - CSS Grid)
+   =========================================== */
 .heatmap-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -648,9 +638,9 @@ tr:hover {
   color: var(--text-muted);
 }
 
-/* ============================================
-   EMPTY STATE - Semantic HTML
-   ============================================ */
+/* ===========================================
+   EMPTY STATE (Topic 1 - HTML Semantic)
+   =========================================== */
 .empty-state {
   text-align: center;
   padding: var(--space-xl);
@@ -674,9 +664,9 @@ tr:hover {
   font-size: 0.9rem;
 }
 
-/* ============================================
-   ROOM ID - HTML Display
-   ============================================ */
+/* ===========================================
+   ROOM ID DISPLAY (Topic 1 - HTML)
+   =========================================== */
 .room-id {
   font-family: monospace;
   color: var(--primary);
@@ -708,9 +698,9 @@ tr:hover {
   text-transform: uppercase;
 }
 
-/* ============================================
-   BADGES - CSS Styling
-   ============================================ */
+/* ===========================================
+   BADGES (Topic 5 - CSS Styling)
+   =========================================== */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -735,9 +725,9 @@ tr:hover {
   color: var(--danger);
 }
 
-/* ============================================
-   SCREEN READER - Accessibility
-   ============================================ */
+/* ===========================================
+   UTILITY CLASSES (Topic 5 - CSS)
+   =========================================== */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -750,9 +740,6 @@ tr:hover {
   border: 0;
 }
 
-/* ============================================
-   UTILITIES - CSS Helpers
-   ============================================ */
 .mt-1 { margin-top: var(--space-sm); }
 .mt-2 { margin-top: var(--space-md); }
 .mt-3 { margin-top: var(--space-lg); }
@@ -779,29 +766,3 @@ tr:hover {
 .justify-between { justify-content: space-between; }
 .align-center { align-items: center; }
 .flex-1 { flex: 1; }
-
-/* ============================================
-   jQuery ANIMATION STYLES (CO3 - JavaScript Libraries)
-   ============================================ */
-/* Hover effect added by jQuery */
-.form-group.jquery-hover {
-  transform: scale(1.02);
-  transition: transform 0.2s ease;
-}
-
-/* Valid state added by jQuery */
-.form-group.jquery-valid .input {
-  border-color: var(--success);
-  box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
-}
-
-/* Shake animation triggered by jQuery */
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
-}
-
-.shake {
-  animation: shake 0.5s ease-in-out;
-}

@@ -1,7 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
+// ============================================
+// jQuery Integration for Syllabus (CO3 - JavaScript Libraries)
+// ============================================
+// Using jQuery for DOM manipulation and event handling
+import $ from 'jquery';
 
 function Login() {
   const navigate = useNavigate();
@@ -12,6 +17,67 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
+
+  // ============================================
+  // jQuery Effects (CO3 - JavaScript Libraries)
+  // ============================================
+  // Using jQuery for DOM manipulation and animations
+  useEffect(() => {
+    // jQuery: Animate form elements on load
+    $('.auth-card').css('opacity', '0').animate({ opacity: 1 }, 500);
+    
+    // jQuery: Add hover effects to inputs
+    $('.input').on('mouseenter', function() {
+      $(this).closest('.form-group').addClass('jquery-hover');
+    }).on('mouseleave', function() {
+      $(this).closest('.form-group').removeClass('jquery-hover');
+    });
+    
+    // jQuery: Animate submit button on hover
+    $('.auth-submit').hover(
+      function() { $(this).find('.btn-arrow').animate({ left: '10px' }, 200); },
+      function() { $(this).find('.btn-arrow').animate({ left: '0px' }, 200); }
+    );
+    
+    // jQuery: Toggle password visibility with animation
+    $('.password-toggle').on('click', function() {
+      const input = $(this).siblings('input');
+      const isPassword = input.attr('type') === 'password';
+      input.attr('type', isPassword ? 'text' : 'password');
+      $(this).animate({ rotate: isPassword ? '90deg' : '0deg' }, 300);
+    });
+
+    // jQuery: Form validation feedback
+    $('.form-group input').on('input', function() {
+      const hasError = $(this).siblings('.error-message').length && 
+                       $(this).siblings('.error-message').text();
+      if ($(this).val() && !hasError) {
+        $(this).closest('.form-group').addClass('jquery-valid');
+      } else {
+        $(this).closest('.form-group').removeClass('jquery-valid');
+      }
+    });
+
+    // jQuery: Animate features on scroll/load
+    $('.auth-feature').each(function(index) {
+      $(this).css('opacity', '0').delay(index * 200).animate({ opacity: 1 }, 400);
+    });
+
+    // jQuery: Shake animation on form error
+    window.jQueryShake = function(element) {
+      $(element).removeClass('shake');
+      setTimeout(() => $(element).addClass('shake'), 10);
+      setTimeout(() => $(element).removeClass('shake'), 600);
+    };
+
+    return () => {
+      // Cleanup jQuery event handlers
+      $('.input').off('mouseenter mouseleave');
+      $('.auth-submit').off('hover');
+      $('.password-toggle').off('click');
+      $('.form-group input').off('input');
+    };
+  }, []);
 
   const validateForm = () => {
     const newErrors = {};
@@ -31,7 +97,11 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      // jQuery: Shake the form on validation error
+      if (window.jQueryShake) window.jQueryShake('.auth-form');
+      return;
+    }
 
     setIsLoading(true);
     const result = await login(formData.email, formData.password);
