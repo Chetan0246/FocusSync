@@ -36,9 +36,11 @@ function Login() {
     setIsLoading(true);
     const result = await login(formData.email, formData.password);
 
-      if (result.success) {
+    if (result.success) {
       addToast('Welcome back!', 'success');
       navigate('/home');
+    } else {
+      addToast(result.error || 'Login failed', 'error');
     }
     setIsLoading(false);
   };

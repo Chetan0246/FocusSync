@@ -1,4 +1,3 @@
-// Advanced Room Page with Modern UI
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
@@ -7,15 +6,12 @@ import Timer from '../components/Timer';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 
-const socket = io.connect('http://localhost:5000', {
-  auth: { token: localStorage.getItem('token') }
-});
-
 function Room() {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const { addToast } = useToast();
   const { getAuthHeader } = useAuth();
+  const socketRef = useRef(null);
 
   const [userCount, setUserCount] = useState(0);
   const [distractionCount, setDistractionCount] = useState(0);
@@ -27,37 +23,17 @@ function Room() {
 
   const wasVisible = useRef(true);
 
-  // Fetch session history
   useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const res = await axios.get(`http://localhost:5000/api/analytics/${roomId}`, {
-          headers: getAuthHeader()
-        });
-        if (res.data?.sessions?.length) {
-          setSessionHistory(res.data.sessions.slice(0, 5));
-        }
-      } catch (error) {
-        console.log('No previous sessions');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchHistory();
-  }, [roomId, getAuthHeader]);
+    const token = localStorage.getItem('token');
+    socketRef.current = io.connect('http://localhost:5000', { auth: { token } });
 
-  // Join room
-  useEffect(() => {
-    socket.emit('join_room', roomId);
-    addToast('Joined room successfully!', 'success');
+    const socket = socketRef.current;
 
-    return () => {
-      socket.emit('leave_room', roomId);
-    };
-  }, [roomId, addToast]);
+    socket.on('connect', () => {
+      socket.emit('join_room', roomId);
+      addToast('Joined room successfully!', 'success');
+    });
 
-  // Socket events
-  useEffect(() => {
     socket.on('user_count', (count) => {
       setUserCount(count);
       if (count > 1) addToast(`${count} users in room`, 'info');
@@ -90,21 +66,38 @@ function Room() {
       addToast(`Session ended! Focus Score: ${score}`, score >= 70 ? 'success' : 'warning');
     });
 
-    return () => {
-      socket.off('user_count');
-      socket.off('distraction_count');
-      socket.off('session_sync');
-      socket.off('session_started');
-      socket.off('session_ended');
-    };
-  }, [addToast, distractionCount, roomId]);
+    socket.on('error', (data) => {
+      addToast(data.message || 'An error occurred', 'error');
+    });
 
-  // Page Visibility API
+    return () => {
+      socket.disconnect();
+    };
+  }, [roomId, addToast, getAuthHeader, distractionCount]);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/analytics/${roomId}`, {
+          headers: getAuthHeader()
+        });
+        if (res.data?.sessions?.length) {
+          setSessionHistory(res.data.sessions.slice(0, 5));
+        }
+      } catch (error) {
+        console.log('No previous sessions');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHistory();
+  }, [roomId, getAuthHeader]);
+
   useEffect(() => {
     const handleVisibilityChange = () => {
       const isVisible = document.visibilityState === 'visible';
-      if (wasVisible.current && !isVisible && sessionActive) {
-        socket.emit('distraction', { roomId });
+      if (wasVisible.current && !isVisible && sessionActive && socketRef.current) {
+        socketRef.current.emit('distraction', { roomId });
         addToast('Distraction: Tab switched!', 'warning');
       }
       wasVisible.current = isVisible;
@@ -115,11 +108,15 @@ function Room() {
   }, [roomId, sessionActive, addToast]);
 
   const handleStartSession = () => {
-    socket.emit('start_session', { roomId, duration });
+    if (socketRef.current) {
+      socketRef.current.emit('start_session', { roomId, duration });
+    }
   };
 
   const handleEndSession = () => {
-    socket.emit('end_session', { roomId });
+    if (socketRef.current) {
+      socketRef.current.emit('end_session', { roomId });
+    }
   };
 
   const handleSessionExpire = () => {
@@ -135,30 +132,19 @@ function Room() {
 
   return (
     <div className="container">
-      {/* Header */}
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div>
-            <h2 style={{ marginBottom: '8px', fontSize: '24px', fontWeight: '700' }}>
-              Study Room
-            </h2>
-            <div className="room-id">
-              <span style={{ color: '#64748b' }}>ID:</span> {roomId}
-            </div>
+            <h2 style={{ marginBottom: '8px', fontSize: '24px', fontWeight: '700' }}>Study Room</h2>
+            <div className="room-id"><span style={{ color: '#64748b' }}>ID:</span> {roomId}</div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div className="user-count">
-              <span>{userCount}</span>
-              <span style={{ fontSize: '14px' }}>Online</span>
-            </div>
-            <button className="btn btn-secondary" onClick={() => navigate('/home')}>
-              ← Leave
-            </button>
+            <div className="user-count"><span>{userCount}</span><span style={{ fontSize: '14px' }}>Online</span></div>
+            <button className="btn btn-secondary" onClick={() => navigate('/home')}>← Leave</button>
           </div>
         </div>
       </div>
 
-      {/* Timer Card */}
       <div className="card card-glow" style={{ marginTop: '24px' }}>
         <h3 className="section-title text-center">
           {sessionActive ? '🎯 Focus Session Active' : '⏱️ Ready to Focus?'}
@@ -166,16 +152,11 @@ function Room() {
 
         <Timer endTime={endTime} onExpire={handleSessionExpire} />
 
-        {/* Session Controls */}
         {!sessionActive ? (
           <div style={{ maxWidth: '300px', margin: '32px auto 0', textAlign: 'center' }}>
             <div className="form-group">
               <label className="form-label">Session Duration</label>
-              <select
-                className="input"
-                value={duration}
-                onChange={(e) => setDuration(Number(e.target.value))}
-              >
+              <select className="input" value={duration} onChange={(e) => setDuration(Number(e.target.value))}>
                 <option value={15}>15 minutes</option>
                 <option value={25}>25 minutes (Pomodoro)</option>
                 <option value={30}>30 minutes</option>
@@ -189,20 +170,15 @@ function Room() {
           </div>
         ) : (
           <div style={{ textAlign: 'center', marginTop: '24px' }}>
-            <button className="btn btn-secondary" onClick={handleEndSession}>
-              End Session
-            </button>
+            <button className="btn btn-secondary" onClick={handleEndSession}>End Session</button>
           </div>
         )}
 
-        {/* Progress */}
         {sessionActive && (
           <div style={{ maxWidth: '400px', margin: '32px auto 0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
               <span style={{ color: '#94a3b8' }}>Current Score</span>
-              <span style={{ color: currentScore >= 70 ? '#22c55e' : '#f59e0b', fontWeight: '600' }}>
-                {currentScore}
-              </span>
+              <span style={{ color: currentScore >= 70 ? '#22c55e' : '#f59e0b', fontWeight: '600' }}>{currentScore}</span>
             </div>
             <div className="progress progress-lg">
               <div className="progress-bar" style={{ width: `${currentScore}%` }} />
@@ -211,99 +187,48 @@ function Room() {
         )}
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-2" style={{ marginTop: '24px' }}>
-        {/* Distraction Counter */}
         <div className="card" style={{ textAlign: 'center' }}>
-          <h4 style={{ color: '#64748b', marginBottom: '16px', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-            ⚠️ Distractions
-          </h4>
-          <div style={{ fontSize: '72px', fontWeight: '800', color: '#f59e0b', lineHeight: '1' }}>
-            {distractionCount}
-          </div>
-          <p style={{ color: '#94a3b8', marginTop: '12px', fontSize: '14px' }}>
-            {distractionCount === 0 ? '🎉 Perfect focus!' : '📌 Stay on this tab'}
-          </p>
+          <h4 style={{ color: '#64748b', marginBottom: '16px', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>⚠️ Distractions</h4>
+          <div style={{ fontSize: '72px', fontWeight: '800', color: '#f59e0b', lineHeight: '1' }}>{distractionCount}</div>
+          <p style={{ color: '#94a3b8', marginTop: '12px', fontSize: '14px' }}>{distractionCount === 0 ? '🎉 Perfect focus!' : '📌 Stay on this tab'}</p>
         </div>
-
-        {/* Focus Score */}
         <div className="card" style={{ textAlign: 'center' }}>
-          <h4 style={{ color: '#64748b', marginBottom: '16px', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-            📊 Focus Score
-          </h4>
-          <div style={{ fontSize: '72px', fontWeight: '800', color: currentScore >= 70 ? '#22c55e' : '#f59e0b', lineHeight: '1' }}>
-            {currentScore}
-          </div>
-          <p style={{ color: '#94a3b8', marginTop: '12px', fontSize: '14px' }}>
-            {currentScore >= 90 ? '🌟 Exceptional!' : currentScore >= 70 ? '👍 Good!' : '💪 Keep going!'}
-          </p>
+          <h4 style={{ color: '#64748b', marginBottom: '16px', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>📊 Focus Score</h4>
+          <div style={{ fontSize: '72px', fontWeight: '800', color: currentScore >= 70 ? '#22c55e' : '#f59e0b', lineHeight: '1' }}>{currentScore}</div>
+          <p style={{ color: '#94a3b8', marginTop: '12px', fontSize: '14px' }}>{currentScore >= 90 ? '🌟 Exceptional!' : currentScore >= 70 ? '👍 Good!' : '💪 Keep going!'}</p>
         </div>
       </div>
 
-      {/* Session History */}
       <div className="card" style={{ marginTop: '24px' }}>
         <h3 className="section-title">📜 Recent Sessions</h3>
         {!loading && sessionHistory.length > 0 ? (
           <div style={{ marginTop: '16px' }}>
             {sessionHistory.map((session, index) => (
-              <div
-                key={index}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '16px',
-                  background: '#1e293b',
-                  borderRadius: '12px',
-                  marginBottom: '8px',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = '#334155'}
-                onMouseLeave={(e) => e.currentTarget.style.background = '#1e293b'}
-              >
+              <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: '#1e293b', borderRadius: '12px', marginBottom: '8px' }}>
                 <div>
                   <div style={{ fontWeight: '600' }}>{formatDateTime(session.startTime)}</div>
-                  <div style={{ color: '#64748b', fontSize: '13px' }}>
-                    {session.endTime ? `${Math.round((new Date(session.endTime) - new Date(session.startTime)) / 60000)} min` : 'In progress'}
-                  </div>
+                  <div style={{ color: '#64748b', fontSize: '13px' }}>{session.endTime ? `${Math.round((new Date(session.endTime) - new Date(session.startTime)) / 60000)} min` : 'In progress'}</div>
                 </div>
-                <div style={{ 
-                  fontSize: '24px', 
-                  fontWeight: '700',
-                  color: session.focusScore >= 70 ? '#22c55e' : '#f59e0b'
-                }}>
-                  {session.focusScore || 100}
-                </div>
+                <div style={{ fontSize: '24px', fontWeight: '700', color: session.focusScore >= 70 ? '#22c55e' : '#f59e0b' }}>{session.focusScore || 100}</div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="empty-state">
-            <div className="empty-state-icon">📝</div>
-            <p className="empty-state-text">No previous sessions</p>
-          </div>
+          <div className="empty-state"><div className="empty-state-icon">📝</div><p className="empty-state-text">No previous sessions</p></div>
         )}
       </div>
 
-      {/* Tips */}
       <div className="card" style={{ marginTop: '24px' }}>
         <h3 className="section-title">💡 Focus Tips</h3>
         <div className="grid grid-2" style={{ marginTop: '16px', gap: '16px' }}>
           <div>
             <h4 style={{ color: '#22c55e', marginBottom: '12px', fontSize: '14px' }}>✅ DO</h4>
-            <ul style={{ color: '#94a3b8', paddingLeft: '20px', lineHeight: '2', fontSize: '14px' }}>
-              <li>Stay on this tab</li>
-              <li>Close unnecessary tabs</li>
-              <li>Find a quiet space</li>
-            </ul>
+            <ul style={{ color: '#94a3b8', paddingLeft: '20px', lineHeight: '2', fontSize: '14px' }}><li>Stay on this tab</li><li>Close unnecessary tabs</li><li>Find a quiet space</li></ul>
           </div>
           <div>
             <h4 style={{ color: '#ef4444', marginBottom: '12px', fontSize: '14px' }}>❌ DON'T</h4>
-            <ul style={{ color: '#94a3b8', paddingLeft: '20px', lineHeight: '2', fontSize: '14px' }}>
-              <li>Switch tabs</li>
-              <li>Check social media</li>
-              <li>Minimize browser</li>
-            </ul>
+            <ul style={{ color: '#94a3b8', paddingLeft: '20px', lineHeight: '2', fontSize: '14px' }}><li>Switch tabs</li><li>Check social media</li><li>Minimize browser</li></ul>
           </div>
         </div>
       </div>

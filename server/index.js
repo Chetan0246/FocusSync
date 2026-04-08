@@ -68,9 +68,11 @@ const activeSessions = {};
 
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id, 'UserId:', socket.userId);
+  socket.rooms = [];
 
   socket.on('join_room', (roomId) => {
     socket.join(roomId);
+    socket.rooms.push(roomId);
     if (!activeSessions[roomId]) {
       activeSessions[roomId] = { userCount: 0, distractionCount: 0, session: null, endTime: null };
     }
@@ -153,6 +155,14 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
+    if (socket.rooms) {
+      socket.rooms.forEach(roomId => {
+        if (activeSessions[roomId]) {
+          activeSessions[roomId].userCount = Math.max(0, activeSessions[roomId].userCount - 1);
+          io.to(roomId).emit('user_count', activeSessions[roomId].userCount);
+        }
+      });
+    }
   });
 });
 
