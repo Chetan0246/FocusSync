@@ -100,6 +100,8 @@ app.use((err, req, res, next) => {
 // This is needed for Socket.io to work (it needs an HTTP server)
 const server = http.createServer(app);
 
+const config = require('./config/constants');
+
 // ============================================
 // TOPIC 3: Socket.io Setup (Real-time Communication)
 // ============================================
@@ -120,8 +122,6 @@ const io = new Server(server, {
 // Before allowing socket connection, verify JWT token
 // This ensures only authenticated users can join rooms
 
-const JWT_SECRET = 'focussync-secret-key';
-
 io.use((socket, next) => {
   // Get token from handshake (initial connection)
   const token = socket.handshake.auth.token;
@@ -133,7 +133,7 @@ io.use((socket, next) => {
   
   // Verify token is valid
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, config.JWT_SECRET);
     socket.userId = decoded.userId;  // Attach user ID to socket
     next();  // Allow connection
   } catch (err) {
