@@ -19,7 +19,10 @@ const app = express();
 
 app.set('trust proxy', 1);
 app.use(helmet());
-app.use(cors({ origin: config.CORS_ORIGIN, credentials: true }));
+app.use(cors({ 
+  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'], 
+  credentials: true 
+}));
 app.use(express.json());
 app.use(morgan('dev'));
 
@@ -52,7 +55,10 @@ app.use((err, req, res, next) => {
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: { origin: config.CORS_ORIGIN, methods: ['GET', 'POST'] },
+  cors: { 
+    origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'], 
+    methods: ['GET', 'POST'] 
+  },
 });
 
 io.use((socket, next) => {
