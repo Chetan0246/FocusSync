@@ -17,20 +17,25 @@ connectDB();
 
 const app = express();
 
+app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors({ origin: config.CORS_ORIGIN, credentials: true }));
 app.use(express.json());
-app.use(morgan(config.NODE_ENV === 'development' ? 'dev' : 'combined'));
+app.use(morgan('dev'));
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
   message: { message: 'Too many attempts, please try again later' },
 });
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
   message: { message: 'Too many requests, please try again later' },
 });
 
