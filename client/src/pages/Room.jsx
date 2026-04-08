@@ -5,13 +5,17 @@ import io from 'socket.io-client';
 import axios from 'axios';
 import Timer from '../components/Timer';
 import { useToast } from '../components/Toast';
+import { useAuth } from '../context/AuthContext';
 
-const socket = io.connect('http://localhost:5000');
+const socket = io.connect('http://localhost:5000', {
+  auth: { token: localStorage.getItem('token') }
+});
 
 function Room() {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const { addToast } = useToast();
+  const { getAuthHeader } = useAuth();
 
   const [userCount, setUserCount] = useState(0);
   const [distractionCount, setDistractionCount] = useState(0);
@@ -27,9 +31,11 @@ function Room() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/analytics/${roomId}`);
-        if (res.data?.length) {
-          setSessionHistory(res.data.slice(0, 5));
+        const res = await axios.get(`http://localhost:5000/api/analytics/${roomId}`, {
+          headers: getAuthHeader()
+        });
+        if (res.data?.sessions?.length) {
+          setSessionHistory(res.data.sessions.slice(0, 5));
         }
       } catch (error) {
         console.log('No previous sessions');
@@ -38,7 +44,7 @@ function Room() {
       }
     };
     fetchHistory();
-  }, [roomId]);
+  }, [roomId, getAuthHeader]);
 
   // Join room
   useEffect(() => {
@@ -78,9 +84,8 @@ function Room() {
     socket.on('session_ended', () => {
       setSessionActive(false);
       setEndTime(null);
-      fetch(`http://localhost:5000/api/analytics/${roomId}`)
-        .then(res => res.json())
-        .then(data => data.length && setSessionHistory(data.slice(0, 5)));
+      axios.get(`http://localhost:5000/api/analytics/${roomId}`, { headers: getAuthHeader() })
+        .then(res => res.data?.sessions?.length && setSessionHistory(res.data.sessions.slice(0, 5)));
       const score = Math.max(0, 100 - distractionCount * 10);
       addToast(`Session ended! Focus Score: ${score}`, score >= 70 ? 'success' : 'warning');
     });
@@ -146,7 +151,7 @@ function Room() {
               <span>{userCount}</span>
               <span style={{ fontSize: '14px' }}>Online</span>
             </div>
-            <button className="btn btn-secondary" onClick={() => navigate('/')}>
+            <button className="btn btn-secondary" onClick={() => navigate('/home')}>
               ← Leave
             </button>
           </div>
