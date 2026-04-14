@@ -1,0 +1,120 @@
+/* ============================================================
+   FocusSync - Session Model (server/models/Session.js)
+   FIXED:
+   - FIX-1:  usernames[] now stores emails, not display-names
+   - FIX-4a: actualDurationSecs default changed to null (0 was falsy bug)
+   - FIX-4c: Added calculateFocusScore() instance method so pre-save doesn't throw
+   - FIX-4c: pre-save hook order fixed (actualDurationSecs BEFORE focusScore)
+   - FIX-4c: Virtual recomputedFocusScore kept for reference; calculateFocusScore()
+             is the authoritative method used in pre-save (no conflict)
+   - FIX-11: completed Boolean field for session classification
+   - FIX-12: Incomplete session penalised by (1 - completionRatio) × 30
+   - FIX-16: Accurate data fields; userScores per-participant
+   ============================================================ */
+
+const mongoose = require('mongoose');
+
+const sessionSchema = new mongoose.Schema({
+  roomId:    { type: String, required: true },
+  userId:    { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  userName:  { type: String, default: 'Anonymous' },
+  userEmail: { type: String, default: '' },        // FIX-1: creator email
+
+  startTime: { type: Date, required: true },
+  endTime:   { type: Date },
+  duration:  { type: Number },  // planned duration in minutes
+
+  // FIX-11: was the session completed fully or ended early?
+  completed: { type: Boolean, default: false },
+
+  distractions:          { type: Number,   default: 0 },
+  focusScore:            { type: Number,   default: 100 },
+
+  // FIX-4a: null until session ends (0 is a valid value, but was falsy → used plannedSecs)
+  actualDurationSecs:    { type: Number,   default: null },
+
+  distractionTimestamps: { type: [Number], default: [] },
+
+  // FIX-1: store emails, not display-names, for unique identification
+  usernames: { type: [String], default: [] },
+
+  events: [{
+    type:      { type: String, enum: ['join', 'leave', 'distraction'] },
+    username:  { type: String },   // email
+    timestamp: { type: Date, default: Date.now }
+  }],
+
+  // FIX-8/15/16: per-participant focus scores (keyed by email)
+  userScores: [{
+    username:   { type: String },   // email
+    focusScore: { type: Number, default: 100 },
+    leaveTime:  { type: Date }
+  }]
+
+}, { timestamps: true });
+
+
+// ── Virtual: recomputedFocusScore (read-only convenience) ───────────────────
+// KEPT as a virtual getter for display/debugging only.
+// Do NOT call this in pre-save – use calculateFocusScore() instead.
+sessionSchema.virtual('recomputedFocusScore').get(function () {
+  return Math.max(0, 100 - (this.distractions || 0) * 10);
+});
+
+
+// ── Instance method: calculateFocusScore() ──────────────────────────────────
+// FIX-4c: this is now a real method (pre-save was calling it but it didn't exist)
+// Accounts for completion ratio (FIX-12) when endTime is available.
+sessionSchema.methods.calculateFocusScore = function () {
+  var distractions  = this.distractions || 0;
+  var baseScore     = Math.max(0, 100 - distractions * 10);
+
+  // FIX-12: apply incompleteness penalty only when session ended early
+  if (!this.completed && this.endTime && this.startTime && this.duration) {
+    var plannedMs      = this.duration * 60 * 1000;
+    var actualMs       = this.endTime.getTime() - this.startTime.getTime();
+    var completionRatio = plannedMs > 0 ? Math.min(1, actualMs / plannedMs) : 1;
+    var penalty        = Math.round((1 - completionRatio) * 30);
+    return Math.max(0, baseScore - penalty);
+  }
+
+  return baseScore;
+};
+
+
+// ── Static: getStatsForUser ─────────────────────────────────────────────────
+// Only completed sessions count toward avg score (FIX-11)
+sessionSchema.statics.getStatsForUser = async function (userId) {
+  var sessions      = await this.find({ userId, endTime: { $exists: true } });
+  var completed     = sessions.filter(function(s) { return s.completed; });
+  var totalSessions     = sessions.length;
+  var totalDistractions = sessions.reduce(function(a, s) { return a + (s.distractions || 0); }, 0);
+  var totalMins         = completed.reduce(function(a, s) { return a + (s.duration || 0); }, 0);
+  var avgScore          = completed.length > 0
+    ? Math.round(completed.reduce(function(a, s) { return a + (s.focusScore || 100); }, 0) / completed.length)
+    : 0;
+  return { totalSessions, totalDistractions, totalMins, avgScore };
+};
+
+
+// ── pre-save hook ────────────────────────────────────────────────────────────
+// FIX-4a / FIX-4b / FIX-4c:
+//   1. actualDurationSecs computed FIRST (so calculateFocusScore can use it)
+//   2. focusScore computed AFTER distractions are finalised (no race condition)
+//   3. calculateFocusScore() now exists (no more TypeError)
+sessionSchema.pre('save', function (next) {
+  // Step 1: Compute actual duration once both timestamps are present
+  if (this.endTime && this.startTime) {
+    this.actualDurationSecs = Math.round((this.endTime.getTime() - this.startTime.getTime()) / 1000);
+  }
+  // Step 2: Recompute focusScore only when the fields it depends on have changed
+  var scoreFields = ['distractions', 'endTime', 'completed', 'actualDurationSecs'];
+  var shouldRecalc = scoreFields.some(function(f) { return this.isModified(f); }, this);
+  if (shouldRecalc) {
+    this.focusScore = this.calculateFocusScore();
+  }
+  next();
+});
+
+
+module.exports = mongoose.model('Session', sessionSchema);

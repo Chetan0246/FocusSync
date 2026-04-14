@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FocusSync – Study Together</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <!-- Bootstrap 5 for grid/components -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
+</head>
+<body>
+
+  <!-- ── Navbar ── -->
+  <nav class="navbar">
+    <a href="/" class="navbar-brand">Focus<span>Sync</span></a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li id="nav-guest">
+        <a href="/login" class="btn btn-secondary" style="padding:0.4rem 1rem;">Login</a>
+      </li>
+      <li id="nav-guest">
+        <a href="/signup" class="btn btn-primary" style="padding:0.4rem 1rem;">Sign Up</a>
+      </li>
+      <li id="nav-user" class="hidden"><a href="/dashboard">Dashboard</a></li>
+      <li id="nav-user" class="hidden"><a href="/leaderboard">🏆 Leaderboard</a></li>
+      <!-- P3-9: Streak badge -->
+      <li id="nav-user" class="hidden"><span class="streak-badge hidden" id="streak-badge">🔥 <span id="streak-count">0</span> day streak</span></li>
+      <li id="nav-user" class="hidden">
+        <span style="color:var(--text-muted)">Hi, <strong id="nav-username" style="color:var(--primary)"></strong></span>
+      </li>
+      <li id="nav-user" class="hidden">
+        <a href="#" id="logout-btn" class="btn btn-secondary" style="padding:0.4rem 1rem;">Logout</a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- ── Hero Section ── -->
+  <section class="hero">
+    <h1>Study Smarter,<br/>Together.</h1>
+    <p>Join a real-time focus room, sync your timer with friends, and track your productivity — all in one place.</p>
+    <div class="hero-buttons">
+      <a href="/signup" class="btn btn-primary">Get Started Free</a>
+      <a href="/login"  class="btn btn-secondary">I have an account</a>
+    </div>
+  </section>
+
+  <!-- ── Features ── -->
+  <section class="features">
+    <div class="section-title text-center">
+      <h2>Why FocusSync?</h2>
+      <p>Everything you need to stay focused and study with others</p>
+    </div>
+    <!-- Bootstrap Grid -->
+    <div class="row g-4 mt-2">
+      <div class="col-md-4">
+        <div class="card h-100">
+          <div class="feature-icon">⏱️</div>
+          <h3>Synchronized Timer</h3>
+          <p class="mt-2">Everyone in a room shares the same countdown — start together, finish together.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100">
+          <div class="feature-icon">👥</div>
+          <h3>Study Rooms</h3>
+          <p class="mt-2">Create or join a room with a unique Room ID. Invite your friends to study together.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100">
+          <div class="feature-icon">📊</div>
+          <h3>Focus Score</h3>
+          <p class="mt-2">We track distractions and calculate your focus score at the end of each session.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100">
+          <div class="feature-icon">🔔</div>
+          <h3>Distraction Alerts</h3>
+          <p class="mt-2">Tab switching is detected and logged — stay accountable to yourself and your group.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100">
+          <div class="feature-icon">📈</div>
+          <h3>Session History</h3>
+          <p class="mt-2">View all your past sessions and scores on your personal dashboard.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100">
+          <div class="feature-icon">🌐</div>
+          <h3>Real-time Sync</h3>
+          <p class="mt-2">Late joiners automatically sync to the remaining session time — no one is left behind.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── How it Works ── -->
+  <section style="padding: 3rem 2rem; max-width:800px; margin: 0 auto; text-align:center;">
+    <h2 class="mb-3">How it Works</h2>
+    <div class="row g-3 text-center">
+      <div class="col-md-4">
+        <div style="font-size:2rem; font-weight:800; color:var(--primary)">1</div>
+        <h4 class="mt-1">Sign Up</h4>
+        <p>Create your free FocusSync account</p>
+      </div>
+      <div class="col-md-4">
+        <div style="font-size:2rem; font-weight:800; color:var(--primary)">2</div>
+        <h4 class="mt-1">Join a Room</h4>
+        <p>Enter a Room ID or create your own</p>
+      </div>
+      <div class="col-md-4">
+        <div style="font-size:2rem; font-weight:800; color:var(--primary)">3</div>
+        <h4 class="mt-1">Start Focusing</h4>
+        <p>Set a timer, study, and earn your score</p>
+      </div>
+    </div>
+    <a href="/signup" class="btn btn-primary mt-3" style="margin-top:2rem;">Start Focusing Now →</a>
+  </section>
+
+  <!-- ── Competitive Analysis (P3-10) ── -->
+  <section class="competitive-analysis mb-3 mt-3">
+    <div class="section-title text-center">
+      <h2>How FocusSync Compares</h2>
+      <p>Why we built a better study platform.</p>
+    </div>
+    <div style="max-width:800px; margin: 0 auto; overflow-x: auto;">
+      <table class="table" style="background:var(--bg-card); border-radius:var(--radius); border-collapse:hidden;">
+        <thead>
+          <tr>
+            <th style="padding:1.5rem; text-align:left;">Feature</th>
+            <th style="padding:1.5rem; text-align:center;">FocusSync</th>
+            <th style="padding:1.5rem; text-align:center;">Forest App</th>
+            <th style="padding:1.5rem; text-align:center;">Pomofocus</th>
+          </tr>
+        </thead>
+        <tbody style="text-align:center;">
+          <tr>
+            <td style="text-align:left; font-weight:600;">Real-time Collaboration</td>
+            <td>✅ Yes</td>
+            <td>❌ Basic</td>
+            <td>❌ No</td>
+          </tr>
+          <tr>
+            <td style="text-align:left; font-weight:600;">Behavioral Analytics</td>
+            <td>✅ Yes</td>
+            <td>❌ Limited</td>
+            <td>❌ No</td>
+          </tr>
+          <tr>
+            <td style="text-align:left; font-weight:600;">Distraction Tracking</td>
+            <td>✅ Auto + Manual</td>
+            <td>✅ Phone only</td>
+            <td>❌ No</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <p>FocusSync &copy; 2024 — Built with HTML5, CSS3, JavaScript, Node.js, Express &amp; MongoDB</p>
+  </footer>
+
+  <!-- Toast container -->
+  <div id="toast-container"></div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    // Show streak if logged in
+    document.addEventListener('DOMContentLoaded', function () {
+      checkAuth(function(loggedIn, user) {
+        if (loggedIn && user && user.streak > 0) {
+          document.getElementById('streak-count').textContent = user.streak;
+          document.getElementById('streak-badge').classList.remove('hidden');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
